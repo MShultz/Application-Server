@@ -32,11 +32,11 @@ public class Server {
 				Socket clientSocket = mainSocket.accept();
 				BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 				String currentLine = input.readLine();
-				while(currentLine != null && !currentLine.equals("")){
-				currentRequest += currentLine + "\n";
-				currentLine = input.readLine();
+				while (currentLine != null && !currentLine.equals("")) {
+					currentRequest += currentLine + "\n";
+					currentLine = input.readLine();
 				}
-				
+
 				if (currentRequest != null)
 					new Thread(new RequestHandler(currentRequest, this, clientSocket, calc)).start();
 			} catch (IOException e) {
@@ -58,8 +58,6 @@ public class Server {
 			dout.flush();
 			clientSocket.close();
 		} catch (IOException e) {
-			System.out.println("Could not connect to socket.");
-			e.printStackTrace();
 		}
 
 	}

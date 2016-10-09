@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 
 public class RequestHandler implements Runnable {
@@ -29,8 +30,8 @@ public class RequestHandler implements Runnable {
 		if (request.contains("calc")) {
 			try {
 				double answer = parseCalculation(request);
-				if(responseHeader.contains("200"))
-				response = formatCalculationResponse(answer).getBytes("ASCII");
+				if (responseHeader.contains("200"))
+					response = formatCalculationResponse(answer).getBytes("ASCII");
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -58,7 +59,7 @@ public class RequestHandler implements Runnable {
 		byte[] response = null;
 		try {
 			response = Files.readAllBytes(Paths.get("src/My Website" + pageRequested));
-		} catch (IOException e) {
+		} catch (IOException | InvalidPathException e) {
 			responseHeader = "HTTP/1.0 404 Not Found\r\n";
 		}
 		return response;
@@ -70,7 +71,6 @@ public class RequestHandler implements Runnable {
 		double[] values = parseValues(request);
 		if (responseHeader == null || !responseHeader.contains("500")) {
 			responseHeader = "HTTP/1.0 200 OK\r\n";
-			System.out.println(calcType);
 			switch (calcType) {
 			case "add":
 				value = calc.add(values[0], values[1]);
@@ -82,12 +82,11 @@ public class RequestHandler implements Runnable {
 				value = calc.multiply(values[0], values[1]);
 				break;
 			case "divide":
-				value = calc.multiply(values[0], values[1]);
+				value = calc.divide(values[0], values[1]);
 				break;
 			default:
 				responseHeader = "HTTP/1.0 404 Not Found\r\n";
 			}
-			System.out.println(responseHeader);
 		}
 		return value;
 	}
@@ -95,7 +94,7 @@ public class RequestHandler implements Runnable {
 	private double[] parseValues(String request) {
 		double[] values = new double[2];
 		try {
-			values[0] = Double.valueOf(request.substring(request.indexOf("=") + 1, request.indexOf("&")));
+			values[0] = Double.valueOf(request.substring(request.indexOf("x=") + 2, request.indexOf("&")));
 			values[1] = Double.valueOf(request.substring(request.indexOf("y=") + 2, request.indexOf("HTTP")).trim());
 		} catch (Exception e) {
 			responseHeader = "HTTP/1.0 500 Internal Error\r\n";
@@ -104,7 +103,8 @@ public class RequestHandler implements Runnable {
 	}
 
 	private String formatCalculationResponse(double answer) {
-		return "<!DOCTYPE html><html><body><p> The answer is: " + answer + "!</body></html>";
+		return "<!DOCTYPE html><html><head><title> The Calculator!</title></head><body><p> The answer is: " + answer
+				+ "!</p></body></html>";
 
 	}
 
